@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Recipient Dashboard | BloodNet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h2 class="fw-bold"><i class="fa-solid fa-gauge text-danger me-2"></i>Recipient Dashboard</h2>
+            <p class="text-muted mb-0">Welcome back, {{ user.first_name }}! Manage your blood requests here.</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'blood_requests:create' %}" class="btn btn-danger rounded-pill shadow-sm"><i class="fa-solid fa-plus me-2"></i>New Blood Request</a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="bg-danger-subtle rounded-circle p-4 me-4">
+                        <i class="fa-solid fa-file-waveform fs-1 text-danger"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted fs-5 mb-0">Total Requests</p>
+                        <h2 class="display-5 fw-bold mb-0 text-dark">{{ recipient.total_requests }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="bg-success-subtle rounded-circle p-4 me-4">
+                        <i class="fa-solid fa-hand-holding-heart fs-1 text-success"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted fs-5 mb-0">Requests Fulfilled</p>
+                        <h2 class="display-5 fw-bold mb-0 text-dark">{{ recipient.total_fulfilled }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Requests -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="fa-solid fa-list-ul text-danger me-2"></i>Your Recent Requests</h5>
+            <a href="{% url 'blood_requests:list' %}?user=me" class="btn btn-sm btn-outline-secondary rounded-pill">View All</a>
+        </div>
+        <div class="card-body p-0">
+            {% if recent_requests %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Patient</th>
+                                <th>Blood Group</th>
+                                <th>Urgency</th>
+                                <th>Status</th>
+                                <th>Fulfillment</th>
+                                <th class="pe-4 text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in recent_requests %}
+                            <tr>
+                                <td class="ps-4 fw-semibold">{{ req.patient_name }}</td>
+                                <td><span class="badge bg-danger fs-6">{{ req.blood_group }}</span></td>
+                                <td>
+                                    {% if req.is_emergency %}
+                                        <span class="badge bg-danger rounded-pill"><i class="fa-solid fa-triangle-exclamation me-1"></i>Critical</span>
+                                    {% elif req.urgency_level == 'urgent' %}
+                                        <span class="badge bg-warning text-dark rounded-pill">Urgent</span>
+                                    {% else %}
+                                        <span class="badge bg-info text-dark rounded-pill">Normal</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if req.status == 'open' %}
+                                        <span class="text-primary fw-semibold"><i class="fa-regular fa-circle-dot me-1"></i>Open</span>
+                                    {% elif req.status == 'in_progress' %}
+                                        <span class="text-warning fw-semibold"><i class="fa-solid fa-spinner fa-spin me-1"></i>In Progress</span>
+                                    {% elif req.status == 'fulfilled' %}
+                                        <span class="text-success fw-semibold"><i class="fa-solid fa-check me-1"></i>Fulfilled</span>
+                                    {% else %}
+                                        <span class="text-muted fw-semibold">{{ req.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ req.fulfillment_percentage }}%;"></div>
+                                        </div>
+                                        <small class="text-muted">{{ req.units_fulfilled }}/{{ req.units_required }}</small>
+                                    </div>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <a href="{% url 'blood_requests:request_detail' req.id %}" class="btn btn-sm btn-outline-danger rounded-pill">Details</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-inbox fs-1 text-muted mb-3 opacity-50"></i>
+                    <h5 class="text-muted">No blood requests yet.</h5>
+                    <p class="text-muted small">When you create a request, it will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

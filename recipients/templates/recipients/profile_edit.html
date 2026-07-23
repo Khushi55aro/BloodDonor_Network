@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Recipient Profile | BloodNet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow rounded-4 overflow-hidden">
+                <div class="card-header bg-danger text-white py-3 border-0 d-flex align-items-center">
+                    <i class="fa-solid fa-user-injured fs-4 me-3"></i>
+                    <div>
+                        <h4 class="mb-0 fw-bold">Edit Recipient Profile</h4>
+                        <p class="mb-0 text-white-50 small">Update your medical and request preferences</p>
+                    </div>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <h5 class="fw-bold mb-3 text-danger"><i class="fa-solid fa-droplet me-2"></i>Blood Group Needed</h5>
+                        <p class="small text-muted mb-4">Select the blood group you most commonly need. This helps donors in your area know what's in demand.</p>
+                        
+                        <div class="mb-4">
+                            {{ form.blood_group_needed|as_crispy_field }}
+                        </div>
+                        
+                        <hr class="mb-4">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'recipients:dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-danger rounded-pill px-5 shadow fw-bold"><i class="fa-solid fa-save me-2"></i>Save Changes</button>
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

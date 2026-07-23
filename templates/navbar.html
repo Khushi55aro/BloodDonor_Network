@@ -1,0 +1,74 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-danger shadow-sm sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'core:home' %}">
+            <i class="fa-solid fa-droplet me-2"></i> BloodNet
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'core:home' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'blood_requests:list' %}">Blood Requests</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'core:about' %}">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'core:contact' %}">Contact</a>
+                </li>
+            </ul>
+            
+            <ul class="navbar-nav ms-auto align-items-center">
+                {% if user.is_authenticated %}
+                    <!-- Notifications Dropdown -->
+                    <li class="nav-item dropdown me-3">
+                        <a class="nav-link text-white position-relative" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fa-solid fa-bell fs-5"></i>
+                            <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark {% if unread_notifications_count == 0 %}d-none{% endif %}">
+                                {{ unread_notifications_count }}
+                            </span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="notifDropdown" style="width: 300px;">
+                            <h6 class="dropdown-header">Notifications</h6>
+                            <div id="notif-list">
+                                <!-- AJAX populated list -->
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-center text-primary" href="{% url 'notifications:list' %}">View All</a>
+                        </div>
+                    </li>
+                    
+                    <!-- User Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            {% if user.profile_photo %}
+                                <img src="{{ user.profile_photo.url }}" class="rounded-circle me-2" width="30" height="30" style="object-fit: cover;">
+                            {% else %}
+                                <i class="fa-solid fa-circle-user fs-4 me-2"></i>
+                            {% endif %}
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                            <li><a class="dropdown-item" href="{% url 'dashboard:index' %}"><i class="fa-solid fa-gauge me-2"></i> Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="fa-solid fa-user me-2"></i> Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="fa-solid fa-right-from-bracket me-2"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a class="btn btn-light text-danger fw-semibold rounded-pill px-4" href="{% url 'accounts:register' %}">Register</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

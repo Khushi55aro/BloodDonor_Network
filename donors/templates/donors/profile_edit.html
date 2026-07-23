@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Medical Info | BloodNet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-danger text-white py-3 border-0 rounded-top-4 d-flex align-items-center">
+                    <i class="fa-solid fa-notes-medical fs-4 me-3"></i>
+                    <h4 class="mb-0 fw-bold">Update Medical Information</h4>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <div class="alert alert-info rounded-3 mb-4">
+                        <i class="fa-solid fa-circle-info me-2"></i>
+                        Please ensure your medical information is accurate. This is crucial for calculating your eligibility to donate safely.
+                    </div>
+                    
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">Physical Details</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">{{ form.blood_group|as_crispy_field }}</div>
+                            <div class="col-md-6 mb-3">{{ form.gender|as_crispy_field }}</div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">{{ form.age|as_crispy_field }}</div>
+                            <div class="col-md-6 mb-3">{{ form.weight|as_crispy_field }}</div>
+                        </div>
+
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">Donation Status</h5>
+                        <div class="mb-3">{{ form.last_donation_date|as_crispy_field }}</div>
+                        <div class="mb-4">{{ form.availability_status|as_crispy_field }}</div>
+
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">Medical Conditions</h5>
+                        <div class="mb-4">{{ form.medical_conditions|as_crispy_field }}</div>
+
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">Emergency Contact</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">{{ form.emergency_contact_name|as_crispy_field }}</div>
+                            <div class="col-md-6 mb-3">{{ form.emergency_contact_phone|as_crispy_field }}</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-danger rounded-pill px-5 shadow-sm fw-semibold">Save Medical Info</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

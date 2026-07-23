@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Choose Your Role | BloodNet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold"><i class="fa-solid fa-user-plus me-2 text-danger"></i>Join BloodNet</h2>
+                <p class="text-muted">Choose how you'd like to be part of the Blood Donor Network</p>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+
+                <!-- Donor Card -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 text-center p-4 role-card">
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-3">
+                                <span class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 rounded-circle" style="width:80px;height:80px;">
+                                    <i class="fa-solid fa-hand-holding-droplet fa-2x text-danger"></i>
+                                </span>
+                            </div>
+                            <h4 class="fw-bold">Donor</h4>
+                            <p class="text-muted small flex-grow-1">Register as a blood donor to save lives. Share your blood group and availability so recipients can find you.</p>
+                            <a href="{% url 'accounts:register_donor' %}" class="btn btn-danger rounded-pill px-4 py-2 fw-semibold mt-3">
+                                Register as Donor
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recipient Card -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 text-center p-4 role-card">
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-3">
+                                <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle" style="width:80px;height:80px;">
+                                    <i class="fa-solid fa-heart-pulse fa-2x text-primary"></i>
+                                </span>
+                            </div>
+                            <h4 class="fw-bold">Recipient</h4>
+                            <p class="text-muted small flex-grow-1">Looking for blood? Register as a recipient to create blood requests and find matching donors nearby.</p>
+                            <a href="{% url 'accounts:register_recipient' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold mt-3">
+                                Register as Recipient
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hospital Card -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 text-center p-4 role-card">
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-3">
+                                <span class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle" style="width:80px;height:80px;">
+                                    <i class="fa-solid fa-hospital fa-2x text-success"></i>
+                                </span>
+                            </div>
+                            <h4 class="fw-bold">Hospital</h4>
+                            <p class="text-muted small flex-grow-1">Register your hospital or blood bank to manage blood requests, coordinate donations, and track inventory.</p>
+                            <a href="{% url 'accounts:register_hospital' %}" class="btn btn-success rounded-pill px-4 py-2 fw-semibold mt-3">
+                                Register as Hospital
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="text-center mt-5">
+                <p class="text-muted small mb-0">Already have an account? <a href="{% url 'accounts:login' %}" class="text-danger text-decoration-none fw-semibold">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .role-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .role-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 0.75rem 1.5rem rgba(0,0,0,0.12) !important;
+    }
+</style>
+{% endblock %}

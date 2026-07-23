@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications | BloodNet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold"><i class="fa-solid fa-bell text-danger me-2"></i>Your Notifications</h3>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="list-group list-group-flush">
+                    {% for notif in notifications %}
+                        <a href="{% if notif.url %}{% url 'notifications:mark_read' notif.id %}{% else %}#{% endif %}" 
+                           class="list-group-item list-group-item-action p-4 border-bottom {% if not notif.is_read %}bg-light border-start border-4 border-danger{% endif %}">
+                            <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0 fw-bold {% if not notif.is_read %}text-dark{% else %}text-muted{% endif %}">
+                                    {% if notif.notification_type == 'emergency' %}
+                                        <i class="fa-solid fa-triangle-exclamation text-danger me-2"></i>
+                                    {% elif notif.notification_type == 'request_accepted' %}
+                                        <i class="fa-solid fa-handshake-angle text-success me-2"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-circle-info text-primary me-2"></i>
+                                    {% endif %}
+                                    {{ notif.title }}
+                                </h6>
+                                <small class="text-muted">{{ notif.created_at|timesince }} ago</small>
+                            </div>
+                            <p class="mb-0 ms-4 {% if not notif.is_read %}text-dark fw-medium{% else %}text-muted{% endif %}">
+                                {{ notif.message }}
+                            </p>
+                        </a>
+                    {% empty %}
+                        <div class="text-center py-5">
+                            <i class="fa-regular fa-bell-slash fs-1 text-muted mb-3 opacity-50"></i>
+                            <h5 class="text-muted">You have no notifications.</h5>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

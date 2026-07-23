@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Blood Requests | BloodNet{% endblock %}
+
+{% block content %}
+<div class="bg-danger-subtle py-4 mb-5 border-bottom border-danger border-opacity-25">
+    <div class="container text-center">
+        <h2 class="fw-bold text-danger"><i class="fa-solid fa-magnifying-glass me-2"></i>Find Blood Requests</h2>
+        <p class="text-muted mb-0">Browse current open requests and save a life today.</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 100px;">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-filter text-danger me-2"></i>Filters</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="GET">
+                        {{ form|crispy }}
+                        <button type="submit" class="btn btn-danger w-100 rounded-pill py-2 mt-3 fw-semibold shadow-sm">Apply Filters</button>
+                        <a href="{% url 'blood_requests:list' %}" class="btn btn-light w-100 rounded-pill py-2 mt-2 text-muted border">Clear</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results -->
+        <div class="col-lg-9">
+            <!-- Nearby / Matched Requests (For Donors) -->
+            {% if user.is_donor and nearby_requests %}
+                <h5 class="fw-bold mb-3 text-danger"><i class="fa-solid fa-location-dot me-2"></i>Nearby Urgent Matches for You</h5>
+                <div class="row g-4 mb-5">
+                    {% for req in nearby_requests %}
+                    <div class="col-md-6">
+                        <div class="card h-100 border-danger shadow border-2 rounded-4 hover-lift position-relative overflow-hidden">
+                            {% if req.is_emergency %}
+                                <div class="bg-danger text-white text-center py-1 fw-bold small text-uppercase w-100 position-absolute top-0 start-0" style="z-index: 10;">
+                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Critical Emergency
+                                </div>
+                            {% endif %}
+                            <div class="card-body p-4 {% if req.is_emergency %}pt-5{% endif %}">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="badge bg-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                        {{ req.blood_group }}
+                                    </span>
+                                    <div class="text-end">
+                                        <span class="badge bg-light text-dark border"><i class="fa-solid fa-route me-1 text-danger"></i> {{ req.distance|floatformat:1 }} km away</span>
+                                    </div>
+                                </div>
+                                <h5 class="fw-bold mb-1">{{ req.patient_name }}</h5>
+                                <p class="text-muted small mb-3"><i class="fa-solid fa-hospital me-1"></i> {{ req.hospital_name }}</p>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <div class="small">
+                                        <span class="fw-semibold text-dark">Needed:</span> {{ req.units_required }} Units
+                                    </div>
+                                    <div class="small">
+                                        <span class="fw-semibold text-dark">Before:</span> <span class="text-danger">{{ req.required_before|date:"M d, Y" }}</span>
+                                    </div>
+                                </div>
+                                
+                                <a href="{% url 'blood_requests:request_detail' req.id %}" class="btn btn-danger w-100 rounded-pill shadow-sm fw-semibold">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- All Open Requests -->
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-ul text-danger me-2"></i>All Open Requests</h5>
+            {% if requests %}
+                <div class="row g-4">
+                    {% for req in requests %}
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm rounded-4 hover-lift position-relative overflow-hidden">
+                                {% if req.is_emergency %}
+                                    <div class="bg-danger text-white text-center py-1 fw-bold small w-100 position-absolute top-0 start-0">
+                                        EMERGENCY
+                                    </div>
+                                {% endif %}
+                                <div class="card-body p-4 {% if req.is_emergency %}pt-5{% endif %}">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="badge bg-danger px-3 py-2 fs-6 rounded-pill shadow-sm">{{ req.blood_group }}</span>
+                                        {% if req.urgency_level == 'urgent' %}
+                                            <span class="badge bg-warning text-dark px-2 py-1 rounded-pill">Urgent</span>
+                                        {% endif %}
+                                    </div>
+                                    <h6 class="fw-bold mb-1">{{ req.patient_name }}</h6>
+                                    <p class="text-muted small mb-2"><i class="fa-solid fa-location-dot me-1"></i> {{ req.hospital_name }}</p>
+                                    
+                                    <div class="progress mb-2" style="height: 6px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ req.fulfillment_percentage }}%;"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between text-muted small mb-4">
+                                        <span>Fulfilled: {{ req.units_fulfilled }}/{{ req.units_required }}</span>
+                                        <span>Ends in {{ req.days_remaining }} days</span>
+                                    </div>
+                                    
+                                    <a href="{% url 'blood_requests:request_detail' req.id %}" class="btn btn-outline-danger w-100 rounded-pill">Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+                    <i class="fa-solid fa-magnifying-glass fs-1 text-muted mb-3 opacity-50"></i>
+                    <h5 class="text-muted">No requests match your criteria.</h5>
+                    <p class="text-muted small mb-0">Try adjusting your filters or checking back later.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

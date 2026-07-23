@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}FAQs | BloodNet{% endblock %}
+
+{% block content %}
+<div class="bg-light py-5 mb-5 border-bottom">
+    <div class="container py-4 text-center">
+        <h1 class="display-5 fw-bold text-dark"><i class="fa-regular fa-circle-question text-danger me-2"></i>Frequently Asked Questions</h1>
+        <p class="lead text-muted mb-0">Find answers to common questions about blood donation and our platform.</p>
+    </div>
+</div>
+
+<div class="container py-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="accordion accordion-flush shadow-sm rounded-4 overflow-hidden border" id="faqAccordion">
+                {% for faq in faqs %}
+                    <div class="accordion-item border-bottom">
+                        <h2 class="accordion-header" id="heading{{ faq.id }}">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} fw-bold bg-white text-dark py-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ faq.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ faq.id }}">
+                                {{ faq.question }}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ faq.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ faq.id }}" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted py-4 px-5 bg-white">
+                                {{ faq.answer|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="p-5 text-center bg-white">
+                        <i class="fa-solid fa-clipboard-question fs-1 text-muted opacity-50 mb-3"></i>
+                        <h5 class="text-muted">No FAQs available at the moment.</h5>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="text-center mt-5">
+                <h5 class="fw-bold mb-3">Still have questions?</h5>
+                <a href="{% url 'core:contact' %}" class="btn btn-outline-danger rounded-pill px-4">Contact Support</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
