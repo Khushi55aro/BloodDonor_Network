@@ -1,20 +1,46 @@
 {% extends 'base.html' %}
 
-{% block title %}Request Details | BloodNet{% endblock %}
+{% block title %}Blood Request #{{ blood_request.id }} Details | BloodNet{% endblock %}
 
 {% block content %}
 <div class="container py-5">
+    <!-- Breadcrumb & Header -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <a href="{% url 'blood_requests:list' %}" class="btn btn-outline-secondary rounded-pill btn-sm">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back to Requests
+            </a>
+            <div>
+                {% if blood_request.status == 'open' %}
+                    <span class="badge bg-primary fs-6 py-2 px-3 rounded-pill"><i class="fa-regular fa-circle-dot me-1"></i>Open Request</span>
+                {% elif blood_request.status == 'in_progress' %}
+                    <span class="badge bg-warning text-dark fs-6 py-2 px-3 rounded-pill"><i class="fa-solid fa-spinner fa-spin me-1"></i>In Progress</span>
+                {% elif blood_request.status == 'fulfilled' %}
+                    <span class="badge bg-success fs-6 py-2 px-3 rounded-pill"><i class="fa-solid fa-circle-check me-1"></i>Fulfilled</span>
+                {% elif blood_request.status == 'cancelled' %}
+                    <span class="badge bg-secondary fs-6 py-2 px-3 rounded-pill"><i class="fa-solid fa-ban me-1"></i>Cancelled</span>
+                {% else %}
+                    <span class="badge bg-dark fs-6 py-2 px-3 rounded-pill">{{ blood_request.get_status_display }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <!-- Main Details -->
         <div class="col-lg-8 mb-4">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
                 <div class="card-header bg-white border-bottom py-4 d-flex justify-content-between align-items-center">
                     <div>
-                        <h4 class="mb-1 fw-bold text-dark">Blood Request Details</h4>
-                        <p class="mb-0 text-muted small">Requested on {{ blood_request.created_at|date:"F d, Y" }}</p>
+                        <h4 class="mb-1 fw-bold text-dark">
+                            <i class="fa-solid fa-droplet text-danger me-2"></i>Blood Request Details
+                        </h4>
+                        <p class="mb-0 text-muted small">Created on {{ blood_request.created_at|date:"F d, Y @ H:i" }} by {{ blood_request.requester.get_full_name|default:blood_request.requester.username }}</p>
                     </div>
                     {% if blood_request.is_emergency %}
-                        <span class="badge bg-danger fs-6 py-2 px-3 rounded-pill shadow-sm animate-pulse"><i class="fa-solid fa-triangle-exclamation me-2"></i>Critical Emergency</span>
+                        <span class="badge bg-danger fs-6 py-2 px-3 rounded-pill shadow-sm animate-pulse">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i>Critical Emergency
+                        </span>
                     {% endif %}
                 </div>
                 <div class="card-body p-4 p-md-5">
@@ -23,41 +49,58 @@
                             <div class="bg-danger rounded-circle d-inline-flex align-items-center justify-content-center shadow mb-3" style="width: 100px; height: 100px;">
                                 <span class="text-white fw-bold fs-1">{{ blood_request.blood_group }}</span>
                             </div>
-                            <h5 class="fw-bold mb-0">Needed</h5>
+                            <h5 class="fw-bold mb-0 text-dark">Blood Needed</h5>
+                            <span class="badge bg-danger-subtle text-danger mt-1">{{ blood_request.units_required }} Unit(s)</span>
                         </div>
                         <div class="col-md-9 border-start ps-md-4">
                             <div class="row mb-3">
-                                <div class="col-sm-4 text-muted fw-semibold">Patient Name</div>
-                                <div class="col-sm-8 fw-bold">{{ blood_request.patient_name }}</div>
+                                <div class="col-sm-4 text-muted fw-semibold"><i class="fa-solid fa-user-injured me-2 text-danger"></i>Patient Name</div>
+                                <div class="col-sm-8 fw-bold fs-5 text-dark">{{ blood_request.patient_name }}</div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-sm-4 text-muted fw-semibold">Hospital / Blood Bank</div>
-                                <div class="col-sm-8">{{ blood_request.hospital_name }}</div>
+                                <div class="col-sm-4 text-muted fw-semibold"><i class="fa-regular fa-hospital me-2 text-danger"></i>Hospital</div>
+                                <div class="col-sm-8 fw-semibold text-dark">{{ blood_request.hospital_name }}</div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-sm-4 text-muted fw-semibold">Location</div>
-                                <div class="col-sm-8">
-                                    {{ blood_request.hospital_address }}<br>
-                                    <a href="#map" class="text-danger small text-decoration-none fw-semibold"><i class="fa-solid fa-map-pin me-1"></i>View on Map</a>
+                                <div class="col-sm-4 text-muted fw-semibold"><i class="fa-solid fa-location-dot me-2 text-danger"></i>Hospital Address</div>
+                                <div class="col-sm-8 text-dark">
+                                    {{ blood_request.hospital_address }}
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-sm-4 text-muted fw-semibold">Units Required</div>
+                                <div class="col-sm-4 text-muted fw-semibold"><i class="fa-regular fa-calendar-check me-2 text-danger"></i>Needed Before</div>
+                                <div class="col-sm-8 text-danger fw-bold fs-6">{{ blood_request.required_before|date:"l, F d, Y" }} ({{ blood_request.days_remaining }} day(s) remaining)</div>
+                            </div>
+
+                            <!-- Privacy-Protected Contact Info -->
+                            <div class="row mb-3">
+                                <div class="col-sm-4 text-muted fw-semibold"><i class="fa-solid fa-phone me-2 text-danger"></i>Contact Phone</div>
                                 <div class="col-sm-8">
-                                    <span class="fw-bold fs-5">{{ blood_request.units_required }}</span> Unit(s)
+                                    {% if is_owner or user.is_staff or user_response.status == 'accepted' %}
+                                        <span class="fw-bold text-success"><i class="fa-solid fa-phone-volume me-1"></i> {{ blood_request.requester.phone|default:"Phone not specified" }}</span>
+                                    {% else %}
+                                        <span class="text-muted fst-italic"><i class="fa-solid fa-lock me-1"></i> Visible after accepting request</span>
+                                    {% endif %}
                                 </div>
                             </div>
+
+                            {% if blood_request.prescription %}
                             <div class="row mb-3">
-                                <div class="col-sm-4 text-muted fw-semibold">Required Before</div>
-                                <div class="col-sm-8 text-danger fw-bold">{{ blood_request.required_before|date:"l, F d, Y" }}</div>
+                                <div class="col-sm-4 text-muted fw-semibold"><i class="fa-solid fa-file-medical me-2 text-danger"></i>Prescription</div>
+                                <div class="col-sm-8">
+                                    <a href="{{ blood_request.prescription.url }}" target="_blank" class="btn btn-sm btn-outline-danger rounded-pill">
+                                        <i class="fa-solid fa-download me-1"></i> View Prescription Document
+                                    </a>
+                                </div>
                             </div>
-                            
+                            {% endif %}
+
                             {% if blood_request.notes %}
                             <div class="row mt-4">
                                 <div class="col-12">
                                     <div class="p-3 bg-light rounded-3 border-start border-4 border-warning">
-                                        <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-note-sticky me-2 text-warning"></i>Additional Notes:</h6>
-                                        <p class="mb-0 text-muted">{{ blood_request.notes }}</p>
+                                        <h6 class="fw-bold text-dark mb-1"><i class="fa-solid fa-note-sticky me-2 text-warning"></i>Additional Notes:</h6>
+                                        <p class="mb-0 text-muted small">{{ blood_request.notes }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -68,19 +111,98 @@
                     <!-- Progress tracking -->
                     <div class="bg-light rounded-4 p-4 border text-center">
                         <h6 class="fw-bold mb-3">Fulfillment Progress ({{ blood_request.units_fulfilled }} / {{ blood_request.units_required }} Units)</h6>
-                        <div class="progress mb-2 bg-white border" style="height: 15px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: {{ blood_request.fulfillment_percentage }}%;"></div>
+                        <div class="progress mb-2 bg-white border" style="height: 18px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: {{ blood_request.fulfillment_percentage }}%;">
+                                {{ blood_request.fulfillment_percentage }}%
+                            </div>
                         </div>
-                        <p class="text-muted small mb-0">{{ blood_request.fulfillment_percentage }}% Completed</p>
+                        <small class="text-muted">{{ blood_request.units_fulfilled }} unit(s) received out of {{ blood_request.units_required }} required.</small>
                     </div>
                 </div>
             </div>
 
-            <!-- Map View -->
+            <!-- Matched Nearest Donors (Visible to Requester / Admin) -->
+            {% if is_owner %}
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-route text-danger me-2"></i>Nearest Eligible Donors (Geo-Matched)</h5>
+                    <span class="badge bg-danger rounded-pill">{{ matched_donors|length }} Found</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if matched_donors %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">Donor Name</th>
+                                        <th>Blood Group</th>
+                                        <th>Distance</th>
+                                        <th>Status</th>
+                                        <th>Contact Details</th>
+                                        <th class="pe-4 text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for m in matched_donors %}
+                                    <tr>
+                                        <td class="ps-4 fw-semibold">
+                                            {{ m.user.get_full_name|default:m.user.username }}
+                                            {% if m.donor_profile.is_verified %}
+                                                <i class="fa-solid fa-circle-check text-primary ms-1" title="Verified Donor"></i>
+                                            {% endif %}
+                                        </td>
+                                        <td><span class="badge bg-danger">{{ m.donor_profile.blood_group }}</span></td>
+                                        <td><span class="fw-bold text-dark"><i class="fa-solid fa-location-arrow text-danger me-1"></i>{{ m.distance }} km</span></td>
+                                        <td>
+                                            {% if m.status == 'accepted' %}
+                                                <span class="badge bg-success rounded-pill px-3 py-2"><i class="fa-solid fa-check me-1"></i>Accepted</span>
+                                            {% elif m.status == 'donated' %}
+                                                <span class="badge bg-info text-dark rounded-pill px-3 py-2"><i class="fa-solid fa-award me-1"></i>Donated</span>
+                                            {% elif m.status == 'rejected' %}
+                                                <span class="badge bg-secondary rounded-pill px-3 py-2">Declined</span>
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark rounded-pill px-3 py-2">Notified / Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <!-- Privacy rule: Phone number visible only if accepted/donated -->
+                                            {% if m.status == 'accepted' or m.status == 'donated' %}
+                                                <span class="fw-bold text-success"><i class="fa-solid fa-phone me-1"></i>{{ m.user.phone|default:"N/A" }}</span>
+                                            {% else %}
+                                                <span class="text-muted small"><i class="fa-solid fa-lock me-1"></i> Hidden until donor accepts</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="pe-4 text-end">
+                                            {% if m.status == 'accepted' and blood_request.is_active %}
+                                                <form method="POST" action="{% url 'blood_requests:complete' blood_request.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="donor_id" value="{{ m.user.id }}">
+                                                    <button type="submit" class="btn btn-sm btn-success rounded-pill fw-semibold shadow-sm">
+                                                        <i class="fa-solid fa-check-double me-1"></i> Mark Donated
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center p-4">
+                            <i class="fa-solid fa-location-slash text-muted fs-2 mb-2"></i>
+                            <p class="text-muted mb-0">No eligible donors found within matching distance yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Interactive Leaflet Map -->
             {% if blood_request.latitude and blood_request.longitude %}
             <div id="map" class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
                 <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-map-location-dot text-danger me-2"></i>Location</h5>
+                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-map-location-dot text-danger me-2"></i>Location Map</h5>
                 </div>
                 <div class="card-body p-0">
                     <div id="leaflet-map" style="height: 350px;"></div>
@@ -91,9 +213,38 @@
 
         <!-- Sidebar Actions -->
         <div class="col-lg-4">
-            <!-- Donor Actions -->
+            <!-- Requester / Owner Actions -->
+            {% if is_owner and blood_request.is_active %}
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-sliders text-danger me-2"></i>Manage Request</h5>
+                    </div>
+                    <div class="card-body p-4 text-center">
+                        {% if responses %}
+                            <form method="POST" action="{% url 'blood_requests:complete' blood_request.id %}" class="mb-3">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success w-100 rounded-pill py-2 fw-bold shadow-sm">
+                                    <i class="fa-solid fa-check-circle me-2"></i> Mark Request as Fulfilled
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <form method="POST" action="{% url 'blood_requests:cancel' blood_request.id %}" onsubmit="return confirm('Are you sure you want to cancel this blood request?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger w-100 rounded-pill py-2 fw-semibold">
+                                <i class="fa-solid fa-ban me-2"></i> Cancel Blood Request
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Donor Action Card -->
             {% if user.is_donor %}
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white border-bottom py-3 text-center">
+                        <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-hand-holding-heart text-danger me-2"></i>Your Response</h5>
+                    </div>
                     <div class="card-body p-4 text-center">
                         {% if not blood_request.is_active %}
                             <div class="alert alert-secondary mb-0 border-0 rounded-3">
@@ -103,63 +254,49 @@
                             {% if user_response.status == 'accepted' %}
                                 <div class="bg-success-subtle text-success p-4 rounded-4 mb-3 border border-success border-opacity-25">
                                     <i class="fa-solid fa-circle-check fs-1 mb-2"></i>
-                                    <h5 class="fw-bold">You Accepted This Request</h5>
-                                    <p class="small mb-0">Please visit the hospital before the required date to donate.</p>
+                                    <h5 class="fw-bold">You Accepted This Request!</h5>
+                                    <p class="small mb-0">Please visit {{ blood_request.hospital_name }} before {{ blood_request.required_before|date:"M d" }} to donate.</p>
                                 </div>
-                                <a href="https://www.google.com/maps/dir/?api=1&destination={{ blood_request.latitude }},{{ blood_request.longitude }}" target="_blank" class="btn btn-primary w-100 rounded-pill py-2 shadow-sm"><i class="fa-solid fa-route me-2"></i>Get Directions</a>
+
+                                <a href="https://www.google.com/maps/dir/?api=1&destination={{ blood_request.latitude }},{{ blood_request.longitude }}" target="_blank" class="btn btn-primary w-100 rounded-pill py-2 mb-3 shadow-sm">
+                                    <i class="fa-solid fa-route me-2"></i>Get Directions on Google Maps
+                                </a>
+
+                                <form method="POST" action="{% url 'blood_requests:complete' blood_request.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success w-100 rounded-pill py-2 fw-bold shadow-sm">
+                                        <i class="fa-solid fa-award me-2"></i> I Have Completed My Donation
+                                    </button>
+                                </form>
+
+                            {% elif user_response.status == 'donated' %}
+                                <div class="bg-info-subtle text-dark p-4 rounded-4 mb-3 border border-info">
+                                    <i class="fa-solid fa-award fs-1 text-primary mb-2"></i>
+                                    <h5 class="fw-bold">Donation Completed</h5>
+                                    <p class="small mb-0">Thank you for saving a life! Your certificate is available in your profile dashboard.</p>
+                                </div>
+                                <a href="{% url 'reports:dashboard' %}" class="btn btn-outline-primary w-100 rounded-pill py-2">
+                                    <i class="fa-solid fa-file-pdf me-2"></i> View Certificate
+                                </a>
                             {% elif user_response.status == 'rejected' %}
                                 <div class="alert alert-secondary mb-0 border-0 rounded-3">
                                     You declined this request.
                                 </div>
                             {% endif %}
                         {% else %}
-                            <h5 class="fw-bold mb-3 text-dark">Can you help?</h5>
-                            <p class="text-muted small mb-4">Accepting this request will notify the patient that you are coming to donate.</p>
+                            <h5 class="fw-bold mb-2 text-dark">Can you donate blood?</h5>
+                            <p class="text-muted small mb-4">Accepting this request will notify the requester and share your phone number so they can coordinate.</p>
                             <form method="POST" action="{% url 'blood_requests:respond' blood_request.id %}">
                                 {% csrf_token %}
                                 <div class="d-grid gap-2">
-                                    <button type="submit" name="action" value="accept" class="btn btn-success rounded-pill py-2 fw-semibold shadow-sm text-uppercase">
-                                        <i class="fa-solid fa-check me-2"></i> I Will Donate
+                                    <button type="submit" name="action" value="accept" class="btn btn-danger rounded-pill py-3 fw-bold shadow-sm text-uppercase">
+                                        <i class="fa-solid fa-check-circle me-2"></i> I Will Donate Blood
                                     </button>
                                     <button type="submit" name="action" value="reject" class="btn btn-light border rounded-pill py-2 fw-semibold text-muted">
                                         I Can't Right Now
                                     </button>
                                 </div>
                             </form>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endif %}
-            
-            <!-- Creator Info / Donors List -->
-            {% if user == blood_request.requester or user.is_staff %}
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-header bg-white border-bottom py-3">
-                        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-users text-danger me-2"></i>Responding Donors</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        {% if responses %}
-                            <ul class="list-group list-group-flush rounded-bottom-4">
-                                {% for resp in responses %}
-                                    <li class="list-group-item p-3 border-0 border-bottom d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="fw-bold mb-1">{{ resp.donor.get_full_name }}</h6>
-                                            <p class="mb-0 small text-muted"><i class="fa-solid fa-phone me-1"></i> {{ resp.donor.phone }}</p>
-                                        </div>
-                                        <div>
-                                            {% if resp.status == 'accepted' %}
-                                                <span class="badge bg-success rounded-pill px-3 py-2">Accepted</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary rounded-pill px-3 py-2">{{ resp.get_status_display }}</span>
-                                            {% endif %}
-                                        </div>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <div class="text-center p-4">
-                                <p class="text-muted mb-0">No donors have responded yet.</p>
-                            </div>
                         {% endif %}
                     </div>
                 </div>
@@ -176,13 +313,12 @@
         let lat = {{ blood_request.latitude }};
         let lng = {{ blood_request.longitude }};
         
-        let map = L.map('leaflet-map').setView([lat, lng], 14);
+        let map = L.map('leaflet-map').setView([lat, lng], 13);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
         
-        // Custom red marker
         let redIcon = L.icon({
             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -193,10 +329,9 @@
         });
         
         L.marker([lat, lng], {icon: redIcon}).addTo(map)
-            .bindPopup("<b>{{ blood_request.hospital_name }}</b><br>Needs {{ blood_request.blood_group }} Blood")
+            .bindPopup("<b>{{ blood_request.hospital_name|escapejs }}</b><br>Needed: {{ blood_request.blood_group }} Blood")
             .openPopup();
             
-        // If current user is donor and has location, show route
         {% if user.is_donor and user.latitude and user.longitude %}
             let donorLat = {{ user.latitude }};
             let donorLng = {{ user.longitude }};
@@ -213,12 +348,11 @@
             L.marker([donorLat, donorLng], {icon: greenIcon}).addTo(map)
                 .bindPopup("<b>Your Location</b>");
                 
-            // Draw a simple line between them
             let latlngs = [
                 [donorLat, donorLng],
                 [lat, lng]
             ];
-            let polyline = L.polyline(latlngs, {color: 'red', dashArray: '5, 10', weight: 2}).addTo(map);
+            let polyline = L.polyline(latlngs, {color: '#e63946', dashArray: '6, 8', weight: 3}).addTo(map);
             map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
         {% endif %}
     });

@@ -15,9 +15,9 @@ def recipient_dashboard_view(request):
     if not request.user.is_recipient:
         return redirect('dashboard:index')
 
-    recipient_profile = get_object_or_404(RecipientProfile, user=request.user)
-    requests = request.user.blood_requests.all().order_by('-created_at')[:5]
-    
+    recipient_profile, _ = RecipientProfile.objects.get_or_create(user=request.user)
+    requests = request.user.blood_requests.all().order_by('-created_at')[:10]
+
     context = {
         'recipient': recipient_profile,
         'recent_requests': requests,
@@ -31,8 +31,8 @@ def recipient_profile_edit_view(request):
     if not request.user.is_recipient:
         return redirect('dashboard:index')
 
-    recipient_profile = get_object_or_404(RecipientProfile, user=request.user)
-    
+    recipient_profile, _ = RecipientProfile.objects.get_or_create(user=request.user)
+
     if request.method == 'POST':
         form = RecipientProfileForm(request.POST, instance=recipient_profile)
         if form.is_valid():

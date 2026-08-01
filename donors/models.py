@@ -100,7 +100,7 @@ class DonorProfile(models.Model):
         if not self.donor_id:
             super().save(*args, **kwargs)
             self.donor_id = f'BDN-{self.pk:06d}'
-            super().save(update_fields=['donor_id'])
+            DonorProfile.objects.filter(pk=self.pk).update(donor_id=self.donor_id)
         else:
             super().save(*args, **kwargs)
 
