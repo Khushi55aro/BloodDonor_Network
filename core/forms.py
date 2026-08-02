@@ -18,3 +18,12 @@ class ContactForm(forms.ModelForm):
             'subject': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Subject'}),
             'message': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Your message...'}),
         }
+    def clean_message(self):
+        message = self.cleaned_data.get("message")
+
+        if len(message.strip()) < 10:
+            raise forms.ValidationError(
+            "Message should contain at least 10 characters."
+        )
+
+        return message

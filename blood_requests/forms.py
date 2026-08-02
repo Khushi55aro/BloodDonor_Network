@@ -4,7 +4,7 @@ Blood request forms.
 
 from django import forms
 from .models import BloodRequest
-
+from django.utils import timezone
 
 class BloodRequestForm(forms.ModelForm):
     """Form for creating a new blood request."""
@@ -30,6 +30,25 @@ class BloodRequestForm(forms.ModelForm):
             'prescription': forms.FileInput(attrs={'class': 'form-control'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Additional notes...'}),
         }
+        def clean_required_before(self):
+            required_before = self.cleaned_data.get("required_before")
+
+            if required_before < timezone.now().date():
+                raise forms.ValidationError("Required date cannot be in the past.")
+
+            return required_before
+
+
+def clean_units_required(self):
+    units = self.cleaned_data.get("units_required")
+
+    if units < 1:
+        raise forms.ValidationError(
+            "Units required must be at least 1."
+        )
+
+    return units
+
 
 
 class BloodRequestSearchForm(forms.Form):

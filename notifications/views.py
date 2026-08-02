@@ -11,7 +11,7 @@ from .models import Notification
 @login_required
 def notification_list_view(request):
     """View all notifications for the user."""
-    notifications = request.user.notifications.all()
+    notifications = request.user.notifications.all().order_by("-created_at")
     
     # Mark all as read when viewed on this page
     unread = notifications.filter(is_read=False)
@@ -43,7 +43,7 @@ def api_unread_count(request):
 @login_required
 def api_latest_notifications(request):
     """AJAX endpoint for fetching recent unread notifications."""
-    notifications = request.user.notifications.filter(is_read=False)[:5]
+    notifications = request.user.notifications.filter(is_read=False).order_by("-created_at")[:5]
     data = []
     for notif in notifications:
         data.append({

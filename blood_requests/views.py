@@ -1,7 +1,7 @@
 """
 Views for handling blood requests, matching, response tracking, and workflow management.
 """
-
+from django.db import models
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -35,6 +35,13 @@ def create_blood_request_view(request):
                 blood_request.longitude = request.user.longitude
 
             blood_request.save()
+            # Prevent duplicate active request for the same patient
+            existing_request = BloodRequest.objects.filter(requester=request.user,patient_name=blood_request.patient_name,status__in=["open", "in_progress"]).exclude(id=blood_request.id)
+
+            if existing_request.exists():
+                blood_request.delete()
+                messages.error(request,"An active request already exists for this patient.")
+                return redirect("blood_requests:create")
 
             # Update stats on recipient or hospital profile
             if request.user.is_recipient:
@@ -180,7 +187,7 @@ def request_detail_view(request, request_id):
             if not d.user.latitude or not d.user.longitude:
                 continue
             dist = d.distance_to(blood_request.latitude, blood_request.longitude)
-            if dist is not None and dist <= 100:
+            if dist is not None and dist <= 30:
                 resp = resp_map.get(d.user_id)
                 matched_donors.append({
                     'donor_profile': d,

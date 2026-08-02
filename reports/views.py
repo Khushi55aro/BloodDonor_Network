@@ -22,7 +22,7 @@ def reports_dashboard_view(request):
     elif request.user.is_donor:
         records = request.user.donation_records.all().order_by('-donation_date')
     else:
-        records = []
+        records = DonationRecord.objects.filter(recipient=request.user).order_by("-donation_date")
         
     context = {
         'records': records,
@@ -60,6 +60,8 @@ def export_donations_csv(request):
 def download_certificate_pdf(request, record_id):
     """Generate a PDF certificate for a completed donation."""
     record = get_object_or_404(DonationRecord, id=record_id)
+    if not record.is_verified:
+        return HttpResponse( "Certificate is not verified yet.", status=403)
     
     # Ensure only the donor or an admin can download it
     if request.user != record.donor and not request.user.is_staff:

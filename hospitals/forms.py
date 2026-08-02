@@ -25,3 +25,20 @@ class HospitalProfileForm(forms.ModelForm):
             'has_blood_bank': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'About the hospital...'}),
         }
+    def clean_phone(self):
+        phone = self.cleaned_data.get("phone")
+
+        if phone:
+            if not phone.isdigit() or len(phone) != 10:
+                raise forms.ValidationError( "Enter a valid 10-digit phone number.")
+
+        return phone
+
+
+    def clean_total_beds(self):
+        beds = self.cleaned_data.get("total_beds")
+
+        if beds is not None and beds < 0:
+            raise forms.ValidationError("Total beds cannot be negative." )
+
+        return beds

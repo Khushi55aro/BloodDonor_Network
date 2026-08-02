@@ -19,6 +19,9 @@ def hospital_portal_view(request):
         user=request.user,
         defaults={'hospital_name': request.user.get_full_name() or request.user.username}
     )
+    if not hospital_profile.registration_number:
+        messages.info( request, "Please complete your hospital profile.")
+        return redirect("hospitals:profile_edit")
     requests = request.user.blood_requests.all().order_by('-created_at')[:10]
 
     context = {

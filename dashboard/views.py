@@ -80,7 +80,7 @@ def admin_manage_users_view(request):
     role_filter = request.GET.get('role', '')
     query = request.GET.get('q', '')
 
-    users = User.objects.all().order_by('-date_joined')
+    users = User.objects.filter(is_superuser=False).order_by('-date_joined')
 
     if role_filter:
         users = users.filter(role=role_filter)
@@ -139,6 +139,12 @@ def admin_toggle_verification_view(request, entity_type, entity_id):
 def admin_delete_user_view(request, user_id):
     """Delete a user account."""
     target_user = get_object_or_404(User, id=user_id)
+
+    # Prevent deletion of superuser accounts
+    if target_user.is_superuser:
+        messages.error(request, "Superuser account cannot be deleted.")
+        return redirect("dashboard:admin_manage_users")
+
     if target_user == request.user:
         messages.error(request, 'You cannot delete your own admin account.')
         return redirect('dashboard:admin_manage_users')

@@ -16,6 +16,9 @@ def recipient_dashboard_view(request):
         return redirect('dashboard:index')
 
     recipient_profile, _ = RecipientProfile.objects.get_or_create(user=request.user)
+    if not recipient_profile.blood_group_needed:
+        messages.info(request, "Please complete your recipient profile first.")
+    return redirect("recipients:profile_edit")
     requests = request.user.blood_requests.all().order_by('-created_at')[:10]
 
     context = {
