@@ -1,80 +1,58 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
 
-{% block title %}Create Blood Request | BloodNet{% endblock %}
+{% block title %}Create Blood Request{% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="card border-0 shadow rounded-4 overflow-hidden">
-                <div class="card-header bg-danger text-white py-4 border-0 d-flex align-items-center">
-                    <i class="fa-solid fa-truck-medical fs-2 me-3"></i>
-                    <div>
-                        <h3 class="mb-0 fw-bold">Request Blood</h3>
-                        <p class="mb-0 text-white-50 small">Fill out the details below to broadcast a request to nearby donors.</p>
-                    </div>
-                </div>
-                <div class="card-body p-4 p-md-5">
-                    
-                    <div class="alert alert-warning border-0 rounded-3 mb-4 d-flex">
-                        <i class="fa-solid fa-circle-info fs-4 me-3 mt-1"></i>
-                        <div>
-                            <strong>Emergency Broadcasts:</strong> If you select "Critical — Emergency", the system will instantly push notifications to all eligible nearby donors. Please use this only for genuine medical emergencies.
-                        </div>
-                    </div>
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm p-4">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-2"><i class="fa-solid fa-square-plus text-danger me-2"></i>Create Blood Request</h3>
+                    <p class="text-muted small mb-4">Enter request details to trigger automatic Geo-Matching with nearby eligible donors.</p>
 
-                    <form method="POST" enctype="multipart/form-data">
+                    <form method="post">
                         {% csrf_token %}
                         
-                        <div class="row">
-                            <!-- Left Column -->
-                            <div class="col-md-6 border-end pe-md-4">
-                                <h5 class="fw-bold mb-3 text-danger"><i class="fa-solid fa-user-injured me-2"></i>Patient Details</h5>
-                                <div class="mb-3">{{ form.patient_name|as_crispy_field }}</div>
-                                <div class="row mb-3">
-                                    <div class="col-6">{{ form.blood_group|as_crispy_field }}</div>
-                                    <div class="col-6">{{ form.units_required|as_crispy_field }}</div>
-                                </div>
-                                <div class="mb-3">{{ form.urgency_level|as_crispy_field }}</div>
-                                <div class="mb-4">{{ form.required_before|as_crispy_field }}</div>
-                                
-                                <h5 class="fw-bold mb-3 text-danger"><i class="fa-solid fa-file-medical me-2"></i>Additional Info</h5>
-                                <div class="mb-3">{{ form.prescription|as_crispy_field }}</div>
-                                <div class="mb-4">{{ form.notes|as_crispy_field }}</div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Required Blood Group</label>
+                                {{ form.blood_group }}
                             </div>
-                            
-                            <!-- Right Column -->
-                            <div class="col-md-6 ps-md-4">
-                                <h5 class="fw-bold mb-3 text-danger"><i class="fa-solid fa-location-dot me-2"></i>Hospital Location</h5>
-                                <div class="mb-3">{{ form.hospital_name|as_crispy_field }}</div>
-                                <div class="mb-3">{{ form.hospital_address|as_crispy_field }}</div>
-                                
-                                <p class="small text-muted mb-2">GPS Coordinates (Required for Geo-Matching):</p>
-                                <div class="row align-items-center mb-3">
-                                    <div class="col-5">{{ form.latitude|as_crispy_field }}</div>
-                                    <div class="col-5">{{ form.longitude|as_crispy_field }}</div>
-                                    <div class="col-2 mt-3">
-                                        <button type="button" class="btn btn-outline-secondary w-100 p-2" id="btn-get-location" title="Get Current Location">
-                                            <i class="fa-solid fa-location-crosshairs"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <!-- Map Preview -->
-                                <div id="map-preview" class="rounded-3 border shadow-sm mb-4" style="height: 250px; background-color: #e9ecef;">
-                                    <!-- Leaflet map will be rendered here -->
-                                    <div class="h-100 d-flex justify-content-center align-items-center text-muted">
-                                        Map Preview
-                                    </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Units Required</label>
+                                {{ form.units_required }}
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold">Location / Address</label>
+                                {{ form.address }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Latitude (for Geo-Matching)</label>
+                                {{ form.latitude }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Longitude (for Geo-Matching)</label>
+                                {{ form.longitude }}
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-check mt-2">
+                                    {{ form.is_emergency }}
+                                    <label class="form-check-label fw-bold text-danger" for="{{ form.is_emergency.id_for_label }}">
+                                        Mark as Emergency Request (Urgent Broadcast)
+                                    </label>
                                 </div>
                             </div>
                         </div>
 
-                        <hr class="mb-4">
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'dashboard:index' %}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
-                            <button type="submit" class="btn btn-danger rounded-pill px-5 shadow fw-bold"><i class="fa-solid fa-tower-broadcast me-2"></i>Broadcast Request</button>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-danger rounded-pill px-4 fw-semibold">Create Request &amp; Match Donors</button>
+                            <a href="{% url 'accounts:dashboard' %}" class="btn btn-light rounded-pill px-4 ms-2">Cancel</a>
                         </div>
                     </form>
                 </div>
@@ -82,87 +60,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Map setup
-    document.addEventListener("DOMContentLoaded", function() {
-        let latInput = document.getElementById('id_req_latitude');
-        let lngInput = document.getElementById('id_req_longitude');
-        let mapDiv = document.getElementById('map-preview');
-        
-        let map = null;
-        let marker = null;
-
-        function initMap(lat, lng) {
-            mapDiv.innerHTML = ''; // Clear placeholder
-            map = L.map('map-preview').setView([lat, lng], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
-            marker = L.marker([lat, lng], {draggable: true}).addTo(map);
-            
-            // Update inputs when marker is dragged
-            marker.on('dragend', function(event) {
-                let position = marker.getLatLng();
-                latInput.value = position.lat.toFixed(7);
-                lngInput.value = position.lng.toFixed(7);
-            });
-        }
-
-        // Initialize if coordinates exist
-        if (latInput.value && lngInput.value) {
-            initMap(parseFloat(latInput.value), parseFloat(lngInput.value));
-        }
-
-        // Get Location Button
-        document.getElementById('btn-get-location').addEventListener('click', function() {
-            let btn = this;
-            if (navigator.geolocation) {
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    let lat = position.coords.latitude;
-                    let lng = position.coords.longitude;
-                    latInput.value = lat.toFixed(7);
-                    lngInput.value = lng.toFixed(7);
-                    
-                    if (map === null) {
-                        initMap(lat, lng);
-                    } else {
-                        map.setView([lat, lng], 14);
-                        marker.setLatLng([lat, lng]);
-                    }
-                    
-                    btn.innerHTML = '<i class="fa-solid fa-check text-success"></i>';
-                    setTimeout(() => {
-                        btn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
-                    }, 2000);
-                }, function(error) {
-                    alert('Error getting location: ' + error.message);
-                    btn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
-                });
-            } else {
-                alert("Geolocation is not supported.");
-            }
-        });
-        
-        // Update map when inputs change manually
-        latInput.addEventListener('change', updateMapFromInputs);
-        lngInput.addEventListener('change', updateMapFromInputs);
-        
-        function updateMapFromInputs() {
-            let lat = parseFloat(latInput.value);
-            let lng = parseFloat(lngInput.value);
-            if (!isNaN(lat) && !isNaN(lng)) {
-                if (map === null) {
-                    initMap(lat, lng);
-                } else {
-                    map.setView([lat, lng], 14);
-                    marker.setLatLng([lat, lng]);
-                }
-            }
-        }
-    });
-</script>
 {% endblock %}

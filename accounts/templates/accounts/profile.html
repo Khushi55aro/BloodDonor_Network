@@ -1,111 +1,59 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
 
-{% block title %}My Profile | BloodNet{% endblock %}
+{% block title %}User Profile{% endblock %}
 
 {% block content %}
 <div class="container py-5">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-4 col-lg-3 mb-4">
-            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
-                {% if user.profile_photo %}
-                    <img src="{{ user.profile_photo.url }}" class="rounded-circle mx-auto mb-3" width="120" height="120" style="object-fit: cover; border: 4px solid #f8d7da;">
-                {% else %}
-                    <div class="bg-danger-subtle rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 120px; height: 120px; border: 4px solid #f8d7da;">
-                        <i class="fa-solid fa-user text-danger" style="font-size: 3rem;"></i>
-                    </div>
-                {% endif %}
-                <h4 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h4>
-                <p class="text-muted mb-3">{{ user.get_role_display }}</p>
-                
-                <div class="progress mb-2" style="height: 10px;">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ user.profile_completion_percentage }}%;" aria-valuenow="{{ user.profile_completion_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <small class="text-muted d-block mb-4">Profile Completion: {{ user.profile_completion_percentage }}%</small>
-                
-                <div class="list-group list-group-flush text-start">
-                    <a href="{% url 'dashboard:index' %}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-gauge me-3 text-muted"></i>Dashboard</a>
-                    <a href="{% url 'accounts:profile' %}" class="list-group-item list-group-item-action border-0 py-3 text-danger fw-semibold"><i class="fa-solid fa-user-pen me-3"></i>Edit Profile</a>
-                    {% if user.is_donor %}
-                    <a href="{% url 'donors:profile_edit' %}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-notes-medical me-3 text-muted"></i>Medical Info</a>
-                    {% endif %}
-                    {% if user.is_hospital %}
-                    <a href="{% url 'hospitals:profile_edit' %}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-regular fa-hospital me-3 text-muted"></i>Hospital Details</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Main Content -->
-        <div class="col-md-8 col-lg-9">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-user-gear text-danger me-2"></i>General Information</h5>
-                </div>
-                <div class="card-body p-4">
-                    <form method="POST" enctype="multipart/form-data">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm p-4">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-4"><i class="fa-solid fa-user-gear text-danger me-2"></i>My User Profile</h3>
+                    
+                    <form method="post">
                         {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6 mb-3">{{ form.first_name|as_crispy_field }}</div>
-                            <div class="col-md-6 mb-3">{{ form.last_name|as_crispy_field }}</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">{{ form.email|as_crispy_field }}</div>
-                            <div class="col-md-6 mb-3">{{ form.phone|as_crispy_field }}</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">{{ form.date_of_birth|as_crispy_field }}</div>
-                            <div class="col-md-6 mb-3">{{ form.profile_photo|as_crispy_field }}</div>
-                        </div>
-                        
-                        <h6 class="fw-bold mt-4 mb-3 border-bottom pb-2">Location Information</h6>
-                        <div class="mb-3">{{ form.address|as_crispy_field }}</div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">{{ form.city|as_crispy_field }}</div>
-                            <div class="col-md-4 mb-3">{{ form.state|as_crispy_field }}</div>
-                            <div class="col-md-4 mb-3">{{ form.pincode|as_crispy_field }}</div>
-                        </div>
-                        
-                        <div class="row align-items-end mb-4">
-                            <div class="col-md-5 mb-3 mb-md-0">{{ form.latitude|as_crispy_field }}</div>
-                            <div class="col-md-5 mb-3 mb-md-0">{{ form.longitude|as_crispy_field }}</div>
-                            <div class="col-md-2 text-end">
-                                <button type="button" class="btn btn-outline-secondary w-100" id="btn-get-location" title="Get Current Location">
-                                    <i class="fa-solid fa-location-crosshairs"></i>
-                                </button>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">First Name</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Last Name</label>
+                                {{ form.last_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Email</label>
+                                {{ form.email }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Phone</label>
+                                {{ form.phone }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">City</label>
+                                {{ form.city }}
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold small">Address</label>
+                                {{ form.address }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Latitude (for Geo-Matching)</label>
+                                {{ form.latitude }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Longitude (for Geo-Matching)</label>
+                                {{ form.longitude }}
                             </div>
                         </div>
-                        
-                        <button type="submit" class="btn btn-danger rounded-pill px-5 py-2 shadow-sm fw-semibold">Save Changes</button>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-danger rounded-pill px-4">Update Profile</button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // JS for getting user location
-    document.getElementById('btn-get-location').addEventListener('click', function() {
-        if (navigator.geolocation) {
-            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            navigator.geolocation.getCurrentPosition(function(position) {
-                document.getElementById('id_latitude').value = position.coords.latitude.toFixed(7);
-                document.getElementById('id_longitude').value = position.coords.longitude.toFixed(7);
-                document.getElementById('btn-get-location').innerHTML = '<i class="fa-solid fa-check text-success"></i>';
-                setTimeout(() => {
-                    document.getElementById('btn-get-location').innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
-                }, 2000);
-            }, function(error) {
-                alert('Error getting location: ' + error.message);
-                document.getElementById('btn-get-location').innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
-            });
-        } else {
-            alert("Geolocation is not supported by this browser.");
-        }
-    });
-</script>
 {% endblock %}

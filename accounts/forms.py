@@ -1,5 +1,5 @@
 """
-Authentication forms for registration, login, profile update, and password management.
+Authentication forms for registration, login, profile update, and password reset.
 """
 
 from django import forms
@@ -8,51 +8,49 @@ from .models import User
 
 
 class BaseRegistrationForm(UserCreationForm):
-    """Base registration form shared by all roles."""
+    """Base registration form for users."""
     email = forms.EmailField(
         required=True,
-        widget=forms.EmailInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Enter your email'
-        })
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email Address'})
     )
     first_name = forms.CharField(
         max_length=30, required=True,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'First Name'
-        })
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'})
     )
     last_name = forms.CharField(
         max_length=30, required=True,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Last Name'
-        })
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'})
     )
     phone = forms.CharField(
         max_length=15, required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Phone Number'
-        })
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'})
+    )
+    city = forms.CharField(
+        max_length=100, required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City'})
     )
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name', 'phone', 'password1', 'password2']
+        fields = ['username', 'email', 'first_name', 'last_name', 'phone', 'city', 'password1', 'password2']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs.update({
-            'class': 'form-control', 'placeholder': 'Choose a username'
+            'class': 'form-control', 'placeholder': 'Choose a Username'
         })
         self.fields['password1'].widget.attrs.update({
-            'class': 'form-control', 'placeholder': 'Create a password'
+            'class': 'form-control', 'placeholder': 'Create Password'
         })
         self.fields['password2'].widget.attrs.update({
-            'class': 'form-control', 'placeholder': 'Confirm password'
+            'class': 'form-control', 'placeholder': 'Confirm Password'
         })
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("This username is already taken.")
+        return username
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -78,83 +76,46 @@ class RecipientRegistrationForm(BaseRegistrationForm):
     role = User.Role.RECIPIENT
 
 
-class HospitalRegistrationForm(BaseRegistrationForm):
-    """Registration form for hospitals. Also collects hospital name."""
-    role = User.Role.HOSPITAL
-
-    hospital_name = forms.CharField(
-        max_length=200, required=True,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Hospital / Blood Bank Name'
-        })
-    )
-
-
 class UserLoginForm(AuthenticationForm):
-    """Styled login form."""
+    """Login form."""
     username = forms.CharField(
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Username or Email',
-            'autofocus': True
-        })
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username', 'autofocus': True})
     )
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Password'
-        })
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'})
     )
 
 
 class UserProfileForm(forms.ModelForm):
-    """Profile update form for all users."""
+    """Profile update form."""
 
     class Meta:
         model = User
-        fields = [
-            'first_name', 'last_name', 'email', 'phone',
-            'profile_photo', 'date_of_birth', 'address',
-            'city', 'state', 'pincode', 'latitude', 'longitude'
-        ]
+        fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'city', 'latitude', 'longitude']
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
-            'profile_photo': forms.FileInput(attrs={'class': 'form-control'}),
-            'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'city': forms.TextInput(attrs={'class': 'form-control'}),
-            'state': forms.TextInput(attrs={'class': 'form-control'}),
-            'pincode': forms.TextInput(attrs={'class': 'form-control'}),
-            'latitude': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0000001', 'id': 'id_latitude'}),
-            'longitude': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0000001', 'id': 'id_longitude'}),
+            'latitude': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0000001'}),
+            'longitude': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0000001'}),
         }
 
 
 class CustomPasswordResetForm(PasswordResetForm):
-    """Styled password reset form."""
+    """Password reset form."""
     email = forms.EmailField(
-        widget=forms.EmailInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Enter your registered email'
-        })
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Registered Email Address'})
     )
 
 
 class CustomSetPasswordForm(SetPasswordForm):
-    """Styled new password form."""
+    """New password form."""
     new_password1 = forms.CharField(
-        widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'New password'
-        })
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'New Password'})
     )
     new_password2 = forms.CharField(
-        widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Confirm new password'
-        })
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm New Password'})
     )

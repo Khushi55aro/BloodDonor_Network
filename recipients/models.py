@@ -1,5 +1,5 @@
 """
-Recipient Profile model for blood request seekers.
+RecipientProfile model for blood request seekers.
 """
 
 from django.db import models
@@ -24,16 +24,13 @@ class RecipientProfile(models.Model):
     blood_group_needed = models.CharField(
         max_length=5, choices=BLOOD_GROUP_CHOICES,
         blank=True, null=True,
-        help_text='Most commonly needed blood group.'
+        help_text='Primary blood group required by recipient.'
     )
-    total_requests = models.PositiveIntegerField(default=0)
-    total_fulfilled = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = 'Recipient Profile'
         verbose_name_plural = 'Recipient Profiles'
 
     def __str__(self):
-        return f'{self.user.get_full_name()} (Recipient)'
+        return f'{self.user.username} (Recipient - {self.blood_group_needed or "Not Set"})'

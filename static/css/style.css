@@ -1,6 +1,6 @@
 /* 
  * Blood Donor Network Custom Styles
- * Theme: Premium Healthcare (White + Red + Dark Gray)
+ * Simple & Clean Beginner Design
  */
 
 body {
@@ -9,15 +9,7 @@ body {
     color: #343a40;
 }
 
-/* Typography Enhancements */
-h1, h2, h3, h4, h5, h6 {
-    letter-spacing: -0.02em;
-}
-
 /* Custom Colors & Utilities */
-.bg-danger-subtle {
-    background-color: #fff0f1 !important;
-}
 .text-danger {
     color: #e63946 !important;
 }
@@ -41,38 +33,9 @@ h1, h2, h3, h4, h5, h6 {
     color: white;
 }
 
-/* Cards & Interactions */
-.hover-lift {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-.hover-lift:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
-}
-
-/* Navbar */
-.navbar {
-    backdrop-filter: blur(10px);
-    background-color: rgba(230, 57, 70, 0.95) !important;
-}
-.navbar-brand {
-    font-size: 1.5rem;
-    letter-spacing: -0.5px;
-}
-
-/* Animations */
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-.animate-pulse {
-    animation: pulse 2s infinite;
-}
-
 /* Forms */
 .form-control, .form-select {
-    padding: 0.75rem 1rem;
+    padding: 0.65rem 1rem;
     border-radius: 0.5rem;
     border: 1px solid #dee2e6;
 }
@@ -81,23 +44,7 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 0 0 0.25rem rgba(230, 57, 70, 0.25);
 }
 
-/* Custom Checkbox */
-.form-check-input:checked {
-    background-color: #e63946;
-    border-color: #e63946;
-}
-
-/* Badges */
-.badge {
-    font-weight: 600;
-}
-
-/* Links */
-.hover-white:hover {
-    color: white !important;
-}
-
-/* Map Containers */
-#map-preview, #leaflet-map {
-    z-index: 1; /* Keep map behind modals/navbars */
+/* Cards */
+.card {
+    border-radius: 0.75rem;
 }

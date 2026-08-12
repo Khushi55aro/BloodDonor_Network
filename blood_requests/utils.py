@@ -1,12 +1,14 @@
 """
-Utility functions for blood donor matching and compatibility.
+Utility functions for Blood-Group Compatibility, Haversine Distance, and Geo-Matching algorithm.
 """
 
+import math
 from donors.models import DonorProfile
 from blood_requests.models import RequestResponse
 from notifications.models import Notification
 
-# Blood Group Compatibility Matrix
+
+# Standard Blood Group Compatibility Dictionary
 # Key: Recipient Blood Group, Value: List of Compatible Donor Blood Groups
 BLOOD_COMPATIBILITY = {
     'A+': ['A+', 'A-', 'O+', 'O-'],
@@ -20,68 +22,106 @@ BLOOD_COMPATIBILITY = {
 }
 
 
-def find_and_notify_eligible_donors(blood_request, radius_km=50):
+def haversine_distance(lat1, lon1, lat2, lon2):
     """
-    Finds all eligible donors near the blood request location matching compatible blood groups.
-    Calculates Haversine distance, creates RequestResponse objects, and sends notifications.
-    Returns the count of donors notified.
+    Calculate the great-circle distance between two points on Earth
+    using the Haversine formula. Returns distance in kilometers.
     """
-    if not blood_request.latitude or not blood_request.longitude:
+    if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
+        return None
+
+    R = 6371.0  # Earth's radius in kilometers
+
+    lat1_rad, lon1_rad, lat2_rad, lon2_rad = map(
+        math.radians, [float(lat1), float(lon1), float(lat2), float(lon2)]
+    )
+
+    dlat = lat2_rad - lat1_rad
+    dlon = lon2_rad - lon1_rad
+
+    a = math.sin(dlat / 2.0) ** 2 + \
+        math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2.0) ** 2
+    c = 2.0 * math.asin(math.sqrt(a))
+
+    return R * c
+
+
+def find_and_notify_eligible_donors(blood_request, radius_km=30):
+    """
+    Geo-Matching Algorithm:
+    1. Find compatible donor blood groups using BLOOD_COMPATIBILITY dictionary.
+    2. Check donor eligibility (90-day cooldown check).
+    3. Check donor availability.
+    4. Check donor has valid latitude and longitude coordinates.
+    5. Calculate Haversine distance from donor to blood request location.
+    6. Filter donors within radius_km (default 30 km).
+    7. Sort donors by distance (nearest donors first).
+    8. Create RequestResponse and send in-app Notification to matched donors.
+    """
+    if blood_request.latitude is None or blood_request.longitude is None:
         return 0
 
-    compatible_groups = BLOOD_COMPATIBILITY.get(blood_request.blood_group, [blood_request.blood_group])
-    
-    # Filter potential donors
+    # 1. Get compatible blood groups
+    compatible_groups = BLOOD_COMPATIBILITY.get(
+        blood_request.blood_group, [blood_request.blood_group]
+    )
+
+    # 2. Query potential donors with compatible blood group
     potential_donors = DonorProfile.objects.select_related('user').filter(
         blood_group__in=compatible_groups
-    ).exclude(availability_status='unavailable')
+    )
 
     matched_donors = []
 
     for donor in potential_donors:
-        # Check eligibility (cooldown, age, weight, etc.)
+        # 3. Check donor eligibility (cooldown + availability)
         if not donor.is_eligible:
             continue
 
-        if not donor.user.latitude or not donor.user.longitude:
+        # 4. Check donor coordinates
+        if donor.user.latitude is None or donor.user.longitude is None:
             continue
 
-        distance = donor.distance_to(blood_request.latitude, blood_request.longitude)
-        
-        # Increase radius to 100km for emergency requests
-        max_dist = 100 if blood_request.is_emergency else radius_km
+        # 5. Calculate Haversine distance
+        dist = haversine_distance(
+            donor.user.latitude, donor.user.longitude,
+            blood_request.latitude, blood_request.longitude
+        )
 
-        if distance is not None and distance <= max_dist:
-            matched_donors.append((donor, distance))
+        # 6. Check within radius
+        if dist is not None and dist <= radius_km:
+            matched_donors.append((donor, dist))
 
-    # Sort matched donors nearest first
-    matched_donors.sort(key=lambda x: x[1])
+    # 7. Sort nearest first
+    matched_donors.sort(key=lambda item: item[1])
 
+    # 8. Create RequestResponse and Notification records
     notified_count = 0
-    for donor, distance in matched_donors:
-        # Create or update RequestResponse
-        resp, created = RequestResponse.objects.get_or_create(
+    for donor, dist in matched_donors:
+        # Create response record if it doesn't exist
+        RequestResponse.objects.get_or_create(
             request=blood_request,
             donor=donor.user,
-            defaults={'distance_km': round(distance, 2), 'status': 'pending'}
+            defaults={'status': 'Pending'}
         )
-        if not created and resp.distance_km != round(distance, 2):
-            resp.distance_km = round(distance, 2)
-            resp.save(update_fields=['distance_km'])
 
-        # Create Notification if newly matched
-        notification_type = 'emergency' if blood_request.is_emergency else 'new_request'
-        title = 'EMERGENCY Blood Request' if blood_request.is_emergency else 'New Blood Request'
+        # Create notification
+        notif_type = 'emergency' if blood_request.is_emergency else 'new_request'
+        prefix = "EMERGENCY: " if blood_request.is_emergency else ""
         
         Notification.objects.get_or_create(
             user=donor.user,
-            notification_type=notification_type,
+            notification_type=notif_type,
             url=f"/blood-requests/{blood_request.id}/",
             defaults={
-                'title': f"{title}: {blood_request.blood_group} near you!",
-                'message': f"A patient needs {blood_request.units_required} unit(s) of {blood_request.blood_group} blood at {blood_request.hospital_name} ({round(distance, 1)} km away)."
+                'title': f"{prefix}Matching Blood Request for {blood_request.blood_group}",
+                'message': f"A blood request for {blood_group_needed_text(blood_request)} is available near your location ({round(dist, 1)} km away)."
             }
         )
         notified_count += 1
 
     return notified_count
+
+
+def blood_group_needed_text(blood_request):
+    return f"{blood_request.units_required} unit(s) of {blood_request.blood_group}"

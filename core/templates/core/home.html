@@ -1,89 +1,81 @@
 {% extends 'base.html' %}
 
+{% block title %}Blood Donor Network - Home{% endblock %}
+
 {% block content %}
 <!-- Hero Section -->
-<section class="py-5 bg-white">
-    <div class="container py-5">
+<div class="bg-white py-5 shadow-sm">
+    <div class="container py-4">
         <div class="row align-items-center">
-            <div class="col-lg-6 mb-5 mb-lg-0">
-                <span class="badge bg-danger-subtle text-danger mb-3 px-3 py-2 rounded-pill fw-semibold">Save Lives Today</span>
-                <h1 class="display-4 fw-bold mb-4 text-dark">Donate Blood,<br><span class="text-danger">Save a Life.</span></h1>
-                <p class="lead text-muted mb-4">Every drop matters. Join our network of heroes and help those in critical need of blood in your local community.</p>
+            <div class="col-lg-7">
+                <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-semibold mb-3">Geo-Matching Blood Network</span>
+                <h1 class="display-4 fw-bold text-dark mb-3">Save Lives by Connecting Nearby Blood Donors</h1>
+                <p class="lead text-muted mb-4">Our simple blood network matches emergency and normal blood requests with eligible donors in their local area using Geo-Matching.</p>
                 <div class="d-flex gap-3">
-                    <a href="{% url 'accounts:register' %}" class="btn btn-danger btn-lg rounded-pill px-4 shadow">Become a Donor</a>
-                    <a href="{% url 'blood_requests:create' %}" class="btn btn-outline-dark btn-lg rounded-pill px-4">Request Blood</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-danger rounded-pill px-4 py-2 fw-semibold">Go to Dashboard</a>
+                    {% else %}
+                        <a href="{% url 'accounts:register_donor' %}" class="btn btn-danger rounded-pill px-4 py-2 fw-semibold">Register as Donor</a>
+                        <a href="{% url 'accounts:register_recipient' %}" class="btn btn-outline-danger rounded-pill px-4 py-2 fw-semibold">Request Blood</a>
+                    {% endif %}
                 </div>
             </div>
-            <div class="col-lg-6">
-                <!-- Using a placeholder for now, ideally an illustration or image -->
-                <div class="bg-light rounded-4 p-5 text-center shadow-sm" style="height: 400px; display: flex; align-items: center; justify-content: center;">
-                    <i class="fa-solid fa-hand-holding-droplet text-danger" style="font-size: 8rem; opacity: 0.8;"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Stats Counter -->
-<section class="py-5 bg-danger text-white">
-    <div class="container">
-        <div class="row text-center gy-4">
-            <div class="col-md-4">
-                <i class="fa-solid fa-users fs-1 mb-3 text-white-50"></i>
-                <h2 class="display-5 fw-bold">{{ stats.total_users }}</h2>
-                <p class="fs-5 mb-0">Registered Users</p>
-            </div>
-            <div class="col-md-4">
-                <i class="fa-solid fa-hand-holding-heart fs-1 mb-3 text-white-50"></i>
-                <h2 class="display-5 fw-bold">{{ stats.total_donors }}</h2>
-                <p class="fs-5 mb-0">Active Donors</p>
-            </div>
-            <div class="col-md-4">
-                <i class="fa-solid fa-heart-pulse fs-1 mb-3 text-white-50"></i>
-                <h2 class="display-5 fw-bold">{{ stats.lives_saved }}</h2>
-                <p class="fs-5 mb-0">Lives Saved</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- How It Works -->
-<section class="py-5 bg-light">
-    <div class="container py-5">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold">How It Works</h2>
-            <p class="text-muted">A simple process to save lives</p>
-        </div>
-        <div class="row g-4 text-center">
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm p-4 rounded-4 hover-lift">
-                    <div class="bg-danger-subtle rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
-                        <i class="fa-solid fa-user-plus fs-2 text-danger"></i>
-                    </div>
-                    <h4 class="fw-bold">1. Register</h4>
-                    <p class="text-muted">Sign up as a donor and complete your medical profile to check eligibility.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm p-4 rounded-4 hover-lift">
-                    <div class="bg-danger-subtle rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
-                        <i class="fa-solid fa-bell fs-2 text-danger"></i>
-                    </div>
-                    <h4 class="fw-bold">2. Get Notified</h4>
-                    <p class="text-muted">Receive alerts when someone nearby needs your specific blood group.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm p-4 rounded-4 hover-lift">
-                    <div class="bg-danger-subtle rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
-                        <i class="fa-solid fa-handshake-angle fs-2 text-danger"></i>
-                    </div>
-                    <h4 class="fw-bold">3. Donate & Save</h4>
-                    <p class="text-muted">Visit the hospital, donate blood, and receive your digital certificate.</p>
+            <div class="col-lg-5 text-center mt-4 mt-lg-0">
+                <div class="p-5 bg-danger-subtle rounded-circle d-inline-block">
+                    <i class="fa-solid fa-heart-pulse text-danger display-1"></i>
                 </div>
             </div>
         </div>
     </div>
-</section>
+</div>
 
+<!-- Workflow Section -->
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">How It Works</h2>
+        <p class="text-muted">Simple 4-step workflow to connect blood seekers with nearby donors.</p>
+    </div>
+
+    <div class="row g-4 text-center">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width:60px; height:60px;">
+                    <i class="fa-solid fa-user-plus fs-4"></i>
+                </div>
+                <h5 class="fw-bold">1. Donor Register</h5>
+                <p class="text-muted small mb-0">Donor registers with blood group, location coordinates, and last donation date.</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <div class="bg-warning text-dark rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width:60px; height:60px;">
+                    <i class="fa-solid fa-calculator fs-4"></i>
+                </div>
+                <h5 class="fw-bold">2. Eligibility Check</h5>
+                <p class="text-muted small mb-0">System calculates donor eligibility based on a 90-day cooldown period.</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width:60px; height:60px;">
+                    <i class="fa-solid fa-location-dot fs-4"></i>
+                </div>
+                <h5 class="fw-bold">3. Recipient Request</h5>
+                <p class="text-muted small mb-0">Recipient posts a blood request with required blood group and location.</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width:60px; height:60px;">
+                    <i class="fa-solid fa-bullhorn fs-4"></i>
+                </div>
+                <h5 class="fw-bold">4. Geo-Match &amp; Notify</h5>
+                <p class="text-muted small mb-0">Haversine formula finds nearest compatible eligible donors and notifies them.</p>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

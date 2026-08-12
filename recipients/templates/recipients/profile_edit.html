@@ -1,39 +1,27 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
 
-{% block title %}Edit Recipient Profile | BloodNet{% endblock %}
+{% block title %}Edit Recipient Details{% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card border-0 shadow rounded-4 overflow-hidden">
-                <div class="card-header bg-danger text-white py-3 border-0 d-flex align-items-center">
-                    <i class="fa-solid fa-user-injured fs-4 me-3"></i>
-                    <div>
-                        <h4 class="mb-0 fw-bold">Edit Recipient Profile</h4>
-                        <p class="mb-0 text-white-50 small">Update your medical and request preferences</p>
-                    </div>
-                </div>
-                <div class="card-body p-4 p-md-5">
-                    
-                    <form method="POST">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm p-4">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-4"><i class="fa-solid fa-hospital-user text-primary me-2"></i>Edit Recipient Profile</h3>
+
+                    <form method="post">
                         {% csrf_token %}
-                        
-                        <h5 class="fw-bold mb-3 text-danger"><i class="fa-solid fa-droplet me-2"></i>Blood Group Needed</h5>
-                        <p class="small text-muted mb-4">Select the blood group you most commonly need. This helps donors in your area know what's in demand.</p>
-                        
-                        <div class="mb-4">
-                            {{ form.blood_group_needed|as_crispy_field }}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Primary Blood Group Needed</label>
+                            {{ form.blood_group_needed }}
                         </div>
-                        
-                        <hr class="mb-4">
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'recipients:dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
-                            <button type="submit" class="btn btn-danger rounded-pill px-5 shadow fw-bold"><i class="fa-solid fa-save me-2"></i>Save Changes</button>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">Save Changes</button>
+                            <a href="{% url 'recipients:dashboard' %}" class="btn btn-light rounded-pill px-4 ms-2">Cancel</a>
                         </div>
                     </form>
-                    
                 </div>
             </div>
         </div>

@@ -1,49 +1,43 @@
 """
-Accounts views for authentication, registration, and profile management.
+Accounts views for registration, authentication, profile management, and dashboard routing.
 """
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.urls import reverse
 from .forms import (
     DonorRegistrationForm,
     RecipientRegistrationForm,
-    HospitalRegistrationForm,
     UserLoginForm,
     UserProfileForm,
 )
 from donors.models import DonorProfile
 from recipients.models import RecipientProfile
-from hospitals.models import HospitalProfile
 
 
 def choose_role_view(request):
-    """Display the Choose Role page so users pick Donor / Recipient / Hospital."""
+    """Display Choose Role page (Donor or Recipient)."""
     if request.user.is_authenticated:
-        return redirect('dashboard:index')
+        return redirect('accounts:dashboard')
     return render(request, 'accounts/choose_role.html')
 
 
 def donor_register_view(request):
-    """Handle donor registration."""
+    """Handle Donor Registration."""
     if request.user.is_authenticated:
-        return redirect('dashboard:index')
+        return redirect('accounts:dashboard')
 
     if request.method == 'POST':
         form = DonorRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Create donor profile — leave optional fields empty
+            # Create associated DonorProfile
             DonorProfile.objects.create(user=user)
-            messages.success(
-                request,
-                'Registration successful! Please log in to continue.'
-            )
+            messages.success(request, 'Donor registration successful! Please log in to complete your profile.')
             return redirect('accounts:login')
         else:
-            messages.error(request, 'Registration failed. Please check the errors below.')
+            messages.error(request, 'Registration failed. Please correct the errors below.')
     else:
         form = DonorRegistrationForm()
 
@@ -51,60 +45,30 @@ def donor_register_view(request):
 
 
 def recipient_register_view(request):
-    """Handle recipient registration."""
+    """Handle Recipient Registration."""
     if request.user.is_authenticated:
-        return redirect('dashboard:index')
+        return redirect('accounts:dashboard')
 
     if request.method == 'POST':
         form = RecipientRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Create recipient profile — leave optional fields empty
+            # Create associated RecipientProfile
             RecipientProfile.objects.create(user=user)
-            messages.success(
-                request,
-                'Registration successful! Please log in to continue.'
-            )
+            messages.success(request, 'Recipient registration successful! Please log in to continue.')
             return redirect('accounts:login')
         else:
-            messages.error(request, 'Registration failed. Please check the errors below.')
+            messages.error(request, 'Registration failed. Please correct the errors below.')
     else:
         form = RecipientRegistrationForm()
 
     return render(request, 'accounts/register_recipient.html', {'form': form})
 
 
-def hospital_register_view(request):
-    """Handle hospital registration."""
-    if request.user.is_authenticated:
-        return redirect('dashboard:index')
-
-    if request.method == 'POST':
-        form = HospitalRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            # Create hospital profile with the name from the form
-            HospitalProfile.objects.create(
-                user=user,
-                hospital_name=form.cleaned_data['hospital_name'],
-            )
-            messages.success(
-                request,
-                'Registration successful! Please log in to continue.'
-            )
-            return redirect('accounts:login')
-        else:
-            messages.error(request, 'Registration failed. Please check the errors below.')
-    else:
-        form = HospitalRegistrationForm()
-
-    return render(request, 'accounts/register_hospital.html', {'form': form})
-
-
 def login_view(request):
-    """Handle user login."""
+    """Handle User Login."""
     if request.user.is_authenticated:
-        return redirect('dashboard:index')
+        return redirect('accounts:dashboard')
 
     if request.method == 'POST':
         form = UserLoginForm(request, data=request.POST)
@@ -115,12 +79,10 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, f'Welcome back, {user.username}!')
-
-                # Redirect to ?next= if present, otherwise role-based dashboard
                 next_url = request.GET.get('next')
                 if next_url:
                     return redirect(next_url)
-                return redirect('dashboard:index')
+                return redirect('accounts:dashboard')
         else:
             messages.error(request, 'Invalid username or password.')
     else:
@@ -131,22 +93,41 @@ def login_view(request):
 
 @login_required
 def logout_view(request):
-    """Handle user logout."""
+    """Handle User Logout."""
     logout(request)
-    messages.info(request, 'You have been successfully logged out.')
+    messages.info(request, 'You have been logged out.')
     return redirect('core:home')
 
 
 @login_required
 def profile_view(request):
-    """View and update general user profile settings."""
+    """View and update general user profile."""
     if request.method == 'POST':
-        form = UserProfileForm(request.POST, request.FILES, instance=request.user)
+        form = UserProfileForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Your profile has been updated successfully!')
+            messages.success(request, 'Your profile details have been updated.')
             return redirect('accounts:profile')
     else:
         form = UserProfileForm(instance=request.user)
 
     return render(request, 'accounts/profile.html', {'form': form})
+
+
+@login_required
+def dashboard_router_view(request):
+    """
+    Role-based dashboard router.
+    Admin -> Django Admin (/admin/)
+    Donor -> Donor Dashboard
+    Recipient -> Recipient Dashboard
+    """
+    user = request.user
+    if user.is_staff or user.is_superuser:
+        return redirect('/admin/')
+    elif user.is_donor:
+        return redirect('donors:dashboard')
+    elif user.is_recipient:
+        return redirect('recipients:dashboard')
+    else:
+        return redirect('core:home')

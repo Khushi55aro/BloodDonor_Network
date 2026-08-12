@@ -1,14 +1,15 @@
 from django.contrib import admin
 from .models import BloodRequest, RequestResponse
 
+
 @admin.register(BloodRequest)
 class BloodRequestAdmin(admin.ModelAdmin):
-    list_display = ('patient_name', 'blood_group', 'urgency_level', 'units_required', 'units_fulfilled', 'status', 'is_emergency', 'required_before', 'created_at')
-    list_filter = ('blood_group', 'urgency_level', 'status', 'is_emergency')
-    search_fields = ('patient_name', 'hospital_name', 'requester__username')
-    readonly_fields = ('units_fulfilled',)
+    list_display = ('requester', 'blood_group', 'units_required', 'status', 'is_emergency', 'created_at')
+    list_filter = ('blood_group', 'status', 'is_emergency')
+    search_fields = ('requester__username', 'address')
+
 
 @admin.register(RequestResponse)
 class RequestResponseAdmin(admin.ModelAdmin):
-    list_display = ('request', 'donor', 'status', 'distance_km', 'responded_at')
+    list_display = ('request', 'donor', 'status', 'created_at')
     list_filter = ('status',)

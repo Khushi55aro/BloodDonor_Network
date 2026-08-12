@@ -6,15 +6,15 @@ from .forms import CustomPasswordResetForm, CustomSetPasswordForm
 app_name = 'accounts'
 
 urlpatterns = [
+    path('dashboard/', views.dashboard_router_view, name='dashboard'),
     path('register/', views.choose_role_view, name='register'),
     path('register/donor/', views.donor_register_view, name='register_donor'),
     path('register/recipient/', views.recipient_register_view, name='register_recipient'),
-    path('register/hospital/', views.hospital_register_view, name='register_hospital'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile_view, name='profile'),
     
-    # Password Reset URLs
+    # Built-in Password Reset URLs
     path('password-reset/', auth_views.PasswordResetView.as_view(
         template_name='accounts/password_reset.html',
         form_class=CustomPasswordResetForm,
